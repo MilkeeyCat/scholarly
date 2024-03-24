@@ -1,5 +1,6 @@
 #include <fstream>
 #include <iostream>
+#include <optional>
 #include <sstream>
 
 #include "db.h"
@@ -30,4 +31,16 @@ void Db::create_tables() {
 	pqxx::work tnx(conn);
 	pqxx::result result = tnx.exec(buffer.str());
 	tnx.commit();
+}
+
+std::optional<std::string> Db::execute_string(const char *query) {
+	try {
+		pqxx::work tnx(conn);
+		pqxx::result result = tnx.exec(query);
+		tnx.commit();
+
+		return std::nullopt;
+	} catch (pqxx::sql_error &e) {
+		return std::make_optional(std::string(e.what()));
+	}
 }

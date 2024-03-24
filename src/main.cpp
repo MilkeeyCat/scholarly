@@ -1,11 +1,10 @@
-#include "component.h"
-#include "components/list.h"
-#include "db.h"
-#include "state.h"
 #include <GLFW/glfw3.h>
 #include <imgui.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+
+#include "state.h"
+#include "tab_bar.h"
 
 int main() {
 	if (!glfwInit()) {
@@ -39,16 +38,7 @@ int main() {
 
 	Db db("postgresql://postgres:root@localhost:5432/students");
 	State state = {
-		.page = Page::Main};
-
-	List list;
-
-	Component *components[] = {
-		&list};
-
-	for (Component *component : components) {
-		component->state = &state;
-	}
+		.db = &db};
 
 	while (!glfwWindowShouldClose(window)) {
 		glfwPollEvents();
@@ -57,12 +47,7 @@ int main() {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
-		ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
-
-		for (Component *component : components) {
-			component->render();
-		}
+		tab_bar(&state);
 
 		ImGui::Render();
 		glClear(GL_COLOR_BUFFER_BIT);

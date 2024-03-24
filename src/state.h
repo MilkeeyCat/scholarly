@@ -1,9 +1,7 @@
 #pragma once
 
-enum class Page {
-	Main,
-};
+#include "db.h"
 
 struct State {
-	Page page;
+	Db *db;
 };
