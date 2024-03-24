@@ -1,9 +1,22 @@
+#include <cstring>
 #include <imgui.h>
 
 #include "sql_editor.h"
 
+struct Table {
+	std::vector<std::string> columns;
+	std::vector<std::vector<std::string>> data;
+
+	void clear() {
+		columns.clear();
+		data.clear();
+	}
+};
+
 char buf[512];
-std::string result;
+char status[512];
+bool columns_set = false;
+Table table;
 
 void sql_editor(State *state) {
 	ImGui::PushID("#sql_query");
@@ -13,14 +26,58 @@ void sql_editor(State *state) {
 	ImGui::PopID();
 
 	if (ImGui::Button("Execute")) {
-		std::optional<std::string> res = state->db->execute_string(buf);
+		columns_set = false;
+		std::optional<pqxx::result> result = state->db->execute_string(buf, status);
 
-		if (res.has_value()) {
-			result = std::move(res.value());
-		} else {
-			result = "Success";
+		if (result.has_value()) {
+			table.clear();
+			memset(status, 0, sizeof(status));
+
+			if (result->columns()) {
+				for (const auto &row : result.value()) {
+					std::vector<std::string> fields;
+
+					for (const auto &field : row) {
+						if (!columns_set) {
+							table.columns.push_back(field.name());
+						}
+
+						fields.push_back(field.c_str());
+					}
+
+					columns_set = true;
+					table.data.push_back(fields);
+				}
+			} else {
+				const char *msg = "Success";
+				memcpy(status, msg, strlen(msg));
+			}
 		}
 	}
 
-	ImGui::Text("%s", result.data());
+	if (strlen(status) > 0 && strcmp("Success", status)) {
+		table.clear();
+	}
+
+	ImGui::Text("%s", status);
+
+	if (table.columns.size()) {
+		ImGui::BeginTable("#sql_table", table.columns.size(), ImGuiTableFlags_Borders);
+
+		ImGui::TableNextRow();
+		for (const std::string column : table.columns) {
+			ImGui::TableNextColumn();
+			ImGui::Text("%s", column.c_str());
+		}
+
+		for (const auto &rows : table.data) {
+			ImGui::TableNextRow();
+			for (const auto &field : rows) {
+				ImGui::TableNextColumn();
+				ImGui::Text("%s", field.c_str());
+			}
+		}
+
+		ImGui::EndTable();
+	}
 }

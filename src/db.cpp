@@ -1,3 +1,4 @@
+#include <cstring>
 #include <fstream>
 #include <iostream>
 #include <optional>
@@ -33,14 +34,17 @@ void Db::create_tables() {
 	tnx.commit();
 }
 
-std::optional<std::string> Db::execute_string(const char *query) {
+std::optional<pqxx::result> Db::execute_string(const char *query, char *err) {
 	try {
 		pqxx::work tnx(conn);
 		pqxx::result result = tnx.exec(query);
 		tnx.commit();
 
-		return std::nullopt;
+		return result;
 	} catch (pqxx::sql_error &e) {
-		return std::make_optional(std::string(e.what()));
+		const char *what = e.what();
+		memcpy(err, what, strlen(what));
+
+		return std::nullopt;
 	}
 }
