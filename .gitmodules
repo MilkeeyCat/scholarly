@@ -1,0 +1,9 @@
+[submodule "dependencies/glfw"]
+	path = dependencies/glfw
+	url = https://github.com/glfw/glfw
+[submodule "dependencies/imgui"]
+	path = dependencies/imgui
+	url = https://github.com/ocornut/imgui
+[submodule "dependencies/libpqxx"]
+	path = dependencies/libpqxx
+	url = https://github.com/jtv/libpqxx
