@@ -1,6 +1,7 @@
 #include <imgui.h>
 
 #include "sql_editor.h"
+#include "students_list.h"
 #include "tab_bar.h"
 
 void tab_bar(State *state) {
@@ -12,7 +13,7 @@ void tab_bar(State *state) {
 	ImGui::BeginTabBar("#owo", ImGuiTabBarFlags_Reorderable);
 
 	if (ImGui::BeginTabItem("Home")) {
-		ImGui::Text("HEY");
+		students_list(state);
 		ImGui::EndTabItem();
 	}
 	if (ImGui::BeginTabItem("SQL Editor")) {
