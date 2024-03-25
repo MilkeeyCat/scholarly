@@ -2,7 +2,12 @@
 
 #include <pqxx/pqxx>
 
+struct Student {
+	int id;
+};
+
 struct StudentCompact {
+	int id;
 	std::string first_name;
 	std::string last_name;
 	std::string group;

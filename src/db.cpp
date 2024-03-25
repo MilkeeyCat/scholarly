@@ -24,6 +24,7 @@ StudentCompact StudentCompact::from(pqxx::row &&row) {
 	std::sprintf(buf, "%d1-%s", curr->tm_year - tm.tm_year, row["name"].as<const char *>());
 
 	return {
+		.id = row["id"].as<int>(),
 		.first_name = row["first_name"].as<std::string>(),
 		.last_name = row["last_name"].as<std::string>(),
 		.group = buf};
