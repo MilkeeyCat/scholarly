@@ -3,11 +3,11 @@
 ## Installation
 
 ```bash
-    git clone --recursive https://github.com/MilkeeyCat/scholarly
-    cd $_
-    mkdir build && cd $_
-    cmake ..
-    make -j$(nproc)
+git clone --recursive https://github.com/MilkeeyCat/scholarly
+cd $_
+mkdir build && cd $_
+cmake ..
+make -j$(nproc)
 ```
 
 ## What, why, when
