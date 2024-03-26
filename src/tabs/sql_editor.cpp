@@ -1,8 +1,8 @@
 #include <cstring>
 #include <imgui.h>
 
+#include "../table.h"
 #include "sql_editor.h"
-#include "table.h"
 
 char buf[512];
 char status[512];

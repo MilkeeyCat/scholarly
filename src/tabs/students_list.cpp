@@ -1,7 +1,7 @@
 #include "students_list.h"
-#include "db.h"
+#include "../db.h"
 #include "imgui.h"
-#include "state.h"
+#include "../state.h"
 
 #define HEIGHT 150
 

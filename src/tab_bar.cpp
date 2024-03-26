@@ -1,9 +1,9 @@
 #include <imgui.h>
 
-#include "sql_editor.h"
-#include "student_tab.h"
-#include "students_list.h"
 #include "tab_bar.h"
+#include "tabs/sql_editor.h"
+#include "tabs/student.h"
+#include "tabs/students_list.h"
 
 void tab_bar(State *state) {
 	ImGui::SetNextWindowPos(ImVec2(0.f, 0.0f));

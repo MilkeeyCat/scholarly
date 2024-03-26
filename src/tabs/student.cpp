@@ -1,4 +1,4 @@
-#include "student_tab.h"
+#include "student.h"
 #include "imgui.h"
 
 void student_tab(const Student &student) {
