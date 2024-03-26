@@ -1,6 +1,7 @@
 #include <imgui.h>
 
 #include "sql_editor.h"
+#include "student_tab.h"
 #include "students_list.h"
 #include "tab_bar.h"
 
@@ -23,10 +24,10 @@ void tab_bar(State *state) {
 	for (size_t i = 0; i < state->tabs.size(); i++) {
 		auto tab = state->tabs[i];
 		char buf[128];
-		std::sprintf(buf, "tab_%d", tab.data.id);
+		std::sprintf(buf, "%s %c.", tab.data.first_name.c_str(), tab.data.last_name[0]);
 
 		if (ImGui::BeginTabItem(buf, &tab.open)) {
-			ImGui::Text("Tab: %d", tab.data.id);
+			student_tab(tab.data);
 			ImGui::EndTabItem();
 		}
 

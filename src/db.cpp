@@ -1,34 +1,7 @@
-#include <cstring>
-#include <ctime>
 #include <fstream>
-#include <iomanip>
-#include <iostream>
-#include <optional>
-#include <sstream>
 
 #include "db.h"
-
-StudentCompact StudentCompact::from(pqxx::row &&row) {
-	std::istringstream ss(row["created_at"].as<const char *>());
-	std::tm tm;
-	ss >> std::get_time(&tm, "%Y-%M-%d");
-
-	if (ss.fail()) {
-		std::cout << "Failed to parse date string!" << std::endl;
-	}
-
-	std::time_t curr_time = std::time(nullptr);
-	std::tm *const curr = std::localtime(&curr_time);
-
-	char buf[512];
-	std::sprintf(buf, "%d1-%s", curr->tm_year - tm.tm_year, row["name"].as<const char *>());
-
-	return {
-		.id = row["id"].as<int>(),
-		.first_name = row["first_name"].as<std::string>(),
-		.last_name = row["last_name"].as<std::string>(),
-		.group = buf};
-}
+#include "utils.h"
 
 Db::Db(const char *connect_string) :
 	conn(pqxx::connection(connect_string)) {
@@ -47,9 +20,9 @@ Db::Db(const char *connect_string) :
 		create_tables();
 	}
 
-	conn.prepare("student_avg_estimation_statement", "SELECT AVG(estimation) AS avg from estimates where student_id = $1");
-
-	students();
+	conn.prepare("student_avg_estimation_statement", "SELECT AVG(estimation) AS avg FROM estimates WHERE student_id = $1");
+	conn.prepare("student_estimates_statement", "SELECT estimation, first_name, last_name, estimates.created_at FROM estimates INNER JOIN teachers ON teachers.id = estimates.teacher_id WHERE estimates.student_id = $1");
+	conn.prepare("student_info_statement", "SELECT students.id, first_name, last_name, created_at, groups.name FROM students INNER JOIN groups ON students.group_id = groups.id WHERE students.id = $1;");
 }
 
 void Db::create_tables() {
@@ -89,8 +62,13 @@ std::vector<StudentCompact> Db::students() {
 
 	for (pqxx::row row : result) {
 		float est_avg = student_avg_estimation(row["id"].as<size_t>()).value();
-		auto student = StudentCompact::from(std::move(row));
-		student.est_avg = est_avg;
+
+		StudentCompact student{
+			.id = row["id"].as<int>(),
+			.first_name = row["first_name"].as<std::string>(),
+			.last_name = row["last_name"].as<std::string>(),
+			.group = student_group(row["name"].as<const char *>(), row["created_at"].as<const char *>()),
+			.est_avg = est_avg};
 
 		students.push_back(student);
 	}
@@ -104,4 +82,39 @@ std::optional<float> Db::student_avg_estimation(size_t id) {
 	tnx.commit();
 
 	return std::make_optional(result["avg"].as<float>());
+}
+
+Student Db::student(size_t id) {
+	pqxx::work tnx(conn);
+	pqxx::row result = tnx.exec_prepared1("student_info_statement", id);
+	tnx.commit();
+	auto estimates = student_estimates(id);
+
+	return {
+		.id = result["id"].as<int>(),
+		.first_name = result["first_name"].as<std::string>(),
+		.last_name = result["last_name"].as<std::string>(),
+		.group = student_group(result["name"].as<const char *>(), result["created_at"].as<const char *>()),
+		.created_at = result["created_at"].as<std::string>(),
+		.estimates = estimates};
+}
+
+std::vector<Estimate> Db::student_estimates(size_t id) {
+	pqxx::work tnx(conn);
+	pqxx::result result = tnx.exec_prepared("student_estimates_statement", id);
+	tnx.commit();
+
+	std::vector<Estimate> estimates;
+
+	for (const auto &row : result) {
+		char buf[128];
+		std::sprintf(buf, "%s %s", row["first_name"].as<const char *>(), row["last_name"].as<const char *>());
+
+		estimates.push_back(Estimate{
+			.estimate = (uint8_t)row["estimation"].as<int>(),
+			.created_at = row["created_at"].as<std::string>(),
+			.teacher_name = buf});
+	}
+
+	return estimates;
 }

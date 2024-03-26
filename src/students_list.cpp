@@ -28,7 +28,9 @@ void compact_student(State *state, const StudentCompact &student) {
 		}
 
 		if (!exist) {
-			state->tabs.push_back({.open = true, .data = {.id = student.id}});
+			state->tabs.push_back(
+				{.open = true,
+					.data = state->db->student(student.id)});
 		}
 	}
 

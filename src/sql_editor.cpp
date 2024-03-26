@@ -2,16 +2,7 @@
 #include <imgui.h>
 
 #include "sql_editor.h"
-
-struct Table {
-	std::vector<std::string> columns;
-	std::vector<std::vector<std::string>> data;
-
-	void clear() {
-		columns.clear();
-		data.clear();
-	}
-};
+#include "table.h"
 
 char buf[512];
 char status[512];
