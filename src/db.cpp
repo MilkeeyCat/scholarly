@@ -21,7 +21,7 @@ Db::Db(const char *connect_string) :
 	}
 
 	conn.prepare("student_avg_estimation_statement", "SELECT AVG(estimation) AS avg FROM estimates WHERE student_id = $1");
-	conn.prepare("student_estimates_statement", "SELECT estimation, first_name, last_name, estimates.created_at FROM estimates INNER JOIN teachers ON teachers.id = estimates.teacher_id WHERE estimates.student_id = $1");
+	conn.prepare("student_estimates_statement", "SELECT estimation, first_name, last_name, estimates.created_at, subjects.name as subject FROM estimates INNER JOIN teachers ON teachers.id = estimates.teacher_id INNER JOIN subjects ON teachers.subject_id = subjects.id WHERE estimates.student_id = $1");
 	conn.prepare("student_info_statement", "SELECT students.id, first_name, last_name, created_at, groups.name FROM students INNER JOIN groups ON students.group_id = groups.id WHERE students.id = $1;");
 }
 
@@ -113,7 +113,8 @@ std::vector<Estimate> Db::student_estimates(size_t id) {
 		estimates.push_back(Estimate{
 			.estimate = (uint8_t)row["estimation"].as<int>(),
 			.created_at = row["created_at"].as<std::string>(),
-			.teacher_name = buf});
+			.teacher_name = buf,
+			.subject = row["subject"].as<std::string>()});
 	}
 
 	return estimates;

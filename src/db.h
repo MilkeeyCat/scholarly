@@ -6,6 +6,7 @@ struct Estimate {
 	uint8_t estimate;
 	std::string created_at;
 	std::string teacher_name;
+	std::string subject;
 };
 
 struct Student {
