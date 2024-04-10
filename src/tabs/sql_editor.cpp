@@ -1,28 +1,22 @@
-#include <cstring>
 #include <imgui.h>
 
 #include "../table.h"
 #include "sql_editor.h"
 
-char buf[512];
-char status[512];
-bool columns_set = false;
-Table table;
-
 void sql_editor(State *state) {
 	ImGui::PushID("#sql_query");
 	ImGui::PushItemWidth(ImGui::GetWindowWidth());
-	ImGui::InputTextMultiline("", buf, sizeof(buf), ImVec2(0, 0));
+	ImGui::InputTextMultiline("", state->sql_query, sizeof(state->sql_query), ImVec2(0, 0));
 	ImGui::PopItemWidth();
 	ImGui::PopID();
 
 	if (ImGui::Button("Execute")) {
-		columns_set = false;
-		std::optional<pqxx::result> result = state->db->execute_string(buf, status);
+		bool columns_set = false;
+		std::optional<pqxx::result> result = state->db->execute_string(state->sql_query, &state->sql_status);
+		state->sql_results.clear();
 
 		if (result.has_value()) {
-			table.clear();
-			memset(status, 0, sizeof(status));
+			state->sql_status.clear();
 
 			if (result->columns()) {
 				for (const auto &row : result.value()) {
@@ -30,26 +24,21 @@ void sql_editor(State *state) {
 
 					for (const auto &field : row) {
 						if (!columns_set) {
-							table.columns.push_back(field.name());
+							state->sql_results.columns.push_back(field.name());
 						}
 
 						fields.push_back(field.c_str());
 					}
 
 					columns_set = true;
-					table.data.push_back(fields);
+					state->sql_results.data.push_back(fields);
 				}
 			} else {
-				const char *msg = "Success";
-				memcpy(status, msg, strlen(msg));
+				state->sql_status = "Success";
 			}
 		}
 	}
 
-	if (strlen(status) > 0 && strcmp("Success", status)) {
-		table.clear();
-	}
-
-	ImGui::Text("%s", status);
-	render_table(table, "#sql_table");
+	ImGui::Text("%s", state->sql_status.c_str());
+	render_table(state->sql_results, "#sql_table");
 }

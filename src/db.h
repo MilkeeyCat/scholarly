@@ -33,7 +33,7 @@ private:
 public:
 	Db(const char *connect_string);
 	void create_tables();
-	std::optional<pqxx::result> execute_string(const char *query, char *err);
+	std::optional<pqxx::result> execute_string(const char *query, std::string *err);
 	std::vector<StudentCompact> students();
 	std::optional<float> student_avg_estimation(size_t id);
 	Student student(size_t id);

@@ -35,7 +35,7 @@ void Db::create_tables() {
 	tnx.commit();
 }
 
-std::optional<pqxx::result> Db::execute_string(const char *query, char *err) {
+std::optional<pqxx::result> Db::execute_string(const char *query, std::string *err) {
 	try {
 		pqxx::work tnx(conn);
 		pqxx::result result = tnx.exec(query);
@@ -44,7 +44,7 @@ std::optional<pqxx::result> Db::execute_string(const char *query, char *err) {
 		return result;
 	} catch (pqxx::sql_error &e) {
 		const char *what = e.what();
-		memcpy(err, what, strlen(what));
+		*err = what;
 
 		return std::nullopt;
 	}
