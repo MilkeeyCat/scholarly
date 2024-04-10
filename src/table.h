@@ -12,3 +12,5 @@ struct Table {
 		data.clear();
 	}
 };
+
+void render_table(Table table, const char *name);

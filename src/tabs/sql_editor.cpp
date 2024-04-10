@@ -51,24 +51,5 @@ void sql_editor(State *state) {
 	}
 
 	ImGui::Text("%s", status);
-
-	if (table.columns.size()) {
-		ImGui::BeginTable("#sql_table", table.columns.size(), ImGuiTableFlags_Borders);
-
-		ImGui::TableNextRow();
-		for (const std::string column : table.columns) {
-			ImGui::TableNextColumn();
-			ImGui::Text("%s", column.c_str());
-		}
-
-		for (const auto &rows : table.data) {
-			ImGui::TableNextRow();
-			for (const auto &field : rows) {
-				ImGui::TableNextColumn();
-				ImGui::Text("%s", field.c_str());
-			}
-		}
-
-		ImGui::EndTable();
-	}
+	render_table(table, "#sql_table");
 }
